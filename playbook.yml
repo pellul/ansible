@@ -1,0 +1,61 @@
+- hosts: localhost
+  vars:
+    dotfiles_path: /home/{{ user }}/.dotfilez
+
+  tasks:
+    - name: Add custom repositories to DNS
+      command:
+        cmd: /usr/bin/dnf config-manager --add-repo "{{ item }}"
+        warn: false
+      loop:
+        - https://packages.microsoft.com/yumrepos/vscode
+        - https://download.copr.fedorainfracloud.org/results/fuhrmann/i3-gaps/fedora-34-x86_64/
+        - https://download.copr.fedorainfracloud.org/results/atim/spotify-tui/fedora-34-x86_64/
+
+    - name: Upgrade system packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: Add user specific packages
+      dnf:
+        name:
+          - code
+          - spotify-tui
+          - i3-gaps
+          - compton
+          - zsh
+          - kitty # to remove
+          - feh
+          - xrandr
+          - gnome-screenshot # to replace
+          - conky
+          - rofi
+          - polybar
+          - tmux
+          - emacs
+          - xss-lock
+          - ImageMagick
+          - dunst
+          - neofetch
+          - ranger
+          - ibus
+          - stow
+          - git
+
+    - name: Create an ibus autostart entry
+      command: ibus-daemon -drxR
+
+    - name: Fetch dotfiles git repository
+      become: true
+      become_user: "{{ user }}"
+      git:
+        repo: 'https://github.com/pellul/.dotfiles.git'
+        dest: "{{ dotfiles_path }}"
+
+    - name: Make symbolic links with dotfiles
+      become: true
+      become_user: "{{ user }}"
+      command:
+        cmd: "{{ dotfiles_path }}/.launch.sh"
+
