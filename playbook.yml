@@ -43,9 +43,6 @@
           - stow
           - git
 
-    - name: Create an ibus autostart entry
-      command: ibus-daemon -drxR
-
     - name: Fetch dotfiles git repository
       become: true
       become_user: "{{ user }}"
@@ -59,3 +56,18 @@
       command:
         cmd: "{{ dotfiles_path }}/.launch.sh"
 
+    - name: Enable and start services
+      become: true
+      become_user: "{{ user }}"
+      systemd:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+        daemon-reload: yes
+        scope: user
+      loop:
+        - redshift
+        - emacs
+
+    - name: Create an ibus autostart entry
+      command: ibus-daemon -drxR
