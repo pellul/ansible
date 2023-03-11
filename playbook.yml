@@ -3,14 +3,12 @@
     dotfiles_path: /home/{{ user }}/.dotfiles
 
   tasks:
-    - name: Add custom repositories to DNS
+    - name: Add custom repositories to DNF
       command:
         cmd: /usr/bin/dnf config-manager --add-repo "{{ item }}"
         warn: false
       loop:
         - https://packages.microsoft.com/yumrepos/vscode
-        - https://download.copr.fedorainfracloud.org/results/fuhrmann/i3-gaps/fedora-34-x86_64/
-        - https://download.copr.fedorainfracloud.org/results/atim/spotify-tui/fedora-34-x86_64/
 
     - name: Upgrade system packages
       dnf:
@@ -21,11 +19,10 @@
       dnf:
         name:
           - code
-          - spotify-tui
-          - i3-gaps
+          - i3
           - compton
           - zsh
-          - kitty # to remove
+          - alacritty
           - feh
           - xrandr
           - gnome-screenshot # to replace
@@ -55,19 +52,6 @@
       become_user: "{{ user }}"
       command:
         cmd: "{{ dotfiles_path }}/.launch.sh"
-
-    - name: Enable and start services
-      become: true
-      become_user: "{{ user }}"
-      systemd:
-        name: "{{ item }}"
-        enabled: yes
-        state: started
-        daemon-reload: yes
-        scope: user
-      loop:
-        - redshift
-        - emacs
 
     - name: Create an ibus autostart entry
       command: ibus-daemon -drxR
